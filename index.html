@@ -170,18 +170,18 @@ var DEFAULT_CSV = [
   "Allgemein,transparent,offen / klar,\"Nutzt Wörter, die das Ziel (Verständlichkeit) beschreiben.\"",
   "Allgemein,kohärent,logisch / passend,Vermeidet akademische Hürden.",
   "Allgemein,terminieren,beenden / planen,Vermeidet Doppeldeutigkeit (Militär/IT).",
-  "Abkürzung,z. B.,zum Beispiel,ausschreiben",
+  "Abkürzung,z. B.,zum Beispiel,ausschreiben",
   "Abkürzung,usw.,und so weiter,meiden oder konkretisieren",
-  "Abkürzung,u. a.,unter anderem,ausschreiben",
-  "Abkürzung,i. d. R.,in der Regel,ausschreiben: „meistens“",
+  "Abkürzung,u. a.,unter anderem,ausschreiben",
+  "Abkürzung,i. d. R.,in der Regel,ausschreiben: „meistens“",
   "Abkürzung,etc.,et cetera (lat.),Besser: „und so weiter“",
   "Abkürzung,ggf.,gegebenenfalls,\"ausschreiben, besser umformulieren\"",
   "Abkürzung,ca.,circa,\"ausschreiben, besser: „etwa“, „ungefähr“\"",
   "Abkürzung,vgl.,vergleiche,Nicht verwenden",
   "Abkürzung,bzw.,beziehungsweise,\"genauer ausdrücken, nicht zu oft nutzen\"",
   "Abkürzung,Nr.,Nummer,\"Nur bei Klarheit verwenden, sonst ausschreiben\"",
-  "Abkürzung,z. T.,zum Teil,Besser: „teilweise“ schreiben",
-  "Abkürzung,d. h.,das heißt,ausschreiben",
+  "Abkürzung,z. T.,zum Teil,Besser: „teilweise“ schreiben",
+  "Abkürzung,d. h.,das heißt,ausschreiben",
   "Füllwort,halt,– (meist überflüssig),meist überflüssig",
   "Füllwort,eben,– (meist überflüssig),meist überflüssig",
   "Füllwort,also,\"daher, demnach, folglich\",konkreter ausdrücken",
@@ -218,6 +218,7 @@ function load() {
 }
 
 function parseCSV(t) {
+  t = t.replace(/\u202f/g, " ").replace(/\u00a0/g, " ");
   var lines = t.split(/\r?\n/), r = {};
   for (var i = 1; i < lines.length; i++) {
     var c = splitLine(lines[i]);
@@ -335,7 +336,10 @@ function runCheck() {
   var result = text;
   all.forEach(function(item) {
     var e2 = item.key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    var re = new RegExp("(?<![\\wÄÖÜäöüß])" + e2 + "(?![\\wÄÖÜäöüß])", "gi");
+    var startsWithWord = /^[\wÄÖÜäöüß]/i.test(item.key);
+    var endsWithWord   = /[\wÄÖÜäöüß]$/i.test(item.key);
+    var pattern = (startsWithWord ? "(?<![\\wÄÖÜäöüß])" : "") + e2 + (endsWithWord ? "(?![\\wÄÖÜäöüß])" : "");
+    var re = new RegExp(pattern, "gi");
     result = result.replace(re, function(m) {
       var i = reps.length; reps.push({m:m, data:item.data, list:item.list}); hits++; found.add(item.key);
       return "\x00" + i + "\x00";
